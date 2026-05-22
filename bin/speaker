@@ -1,19 +1,45 @@
 #!/usr/bin/env bash
-# speaker.sh — Switch audio output to analogue speakers
-# Must NOT be run as root — talks to user PipeWire/bluetoothctl session
+# speaker — Switch audio output to analogue speakers
+# Supports Artix Linux with runit or OpenRC
+# Must NOT be run as root
+
 if [[ $EUID -eq 0 ]]; then
-  echo "✘ Do not run this script with sudo — run as regular user: $(basename $0)"
+  echo "✘ Do not run with sudo — run as regular user: $(basename $0)"
   exit 1
 fi
 
-
+MAC="94:4B:F8:01:52:02"
 SINK="alsa_output.pci-0000_00_1b.0.analog-stereo"
 
-# Disconnect Bluetooth if connected
-BT_CONNECTED=$(bluetoothctl info 94:4B:F8:01:52:02 2>/dev/null | grep "Connected: yes")
+# ── Detect init system ────────────────────────────────────────────────────────
+if command -v sv &>/dev/null && [[ -d /run/runit ]]; then
+  INIT="runit"
+elif command -v rc-service &>/dev/null; then
+  INIT="openrc"
+else
+  INIT="unknown"
+fi
+
+restart_user_service() {
+  local svc=$1
+  case "$INIT" in
+    runit)   sv restart ~/.config/sv/"$svc" 2>/dev/null || true ;;
+    openrc)  rc-service --user "$svc" restart 2>/dev/null || true ;;
+    *)       echo "⚠ Unknown init system — restart $svc manually" ;;
+  esac
+}
+
+restart_mpd() {
+  if pgrep -x mpd > /dev/null; then
+    restart_user_service mpd
+  fi
+}
+
+# ── Disconnect Bluetooth if connected ─────────────────────────────────────────
+BT_CONNECTED=$(bluetoothctl info "$MAC" 2>/dev/null | grep "Connected: yes")
 if [[ -n "$BT_CONNECTED" ]]; then
   echo "Disconnecting TOZO T10..."
-  bluetoothctl disconnect 94:4B:F8:01:52:02
+  bluetoothctl disconnect "$MAC"
   echo "Waiting for TOZO to disconnect fully..."
   sleep 5
 fi
@@ -24,9 +50,6 @@ bluetoothctl power off
 echo "Switching to speakers..."
 pactl set-default-sink "$SINK"
 
-# Restart MPD if running
-if systemctl --user is-active --quiet mpd; then
-  systemctl --user restart mpd
-fi
+restart_mpd
 
-echo "✔ Audio → Speakers"
+echo "✔ Audio → Speakers (init: $INIT)"
