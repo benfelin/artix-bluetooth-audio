@@ -4,15 +4,10 @@ Bluetooth audio management scripts for Artix Linux (runit) with TOZO T10 earbuds
 
 ## Hardware
 
-| Device | Role |
+| Device | Details |
 |---|---|
-| [TP-Link UB500](https://www.tp-link.com/uk/home-networking/adapter/ub500/) | USB Bluetooth 5.0 dongle, permanently installed |
-| [TOZO T10](https://www.tozostore.com/products/tozo-t10) | True wireless earbuds, Bluetooth 5.0, IPX8 |
-
-## Setup
-
-![TOZO T10](https://cdn.tozostore.com/images/t10-black.jpg)
-![TP-Link UB500](https://static.tp-link.com/UB500_1.0_01_normal_20191118144614i.jpg)
+| [TP-Link UB500](https://www.tp-link.com/uk/home-networking/adapter/ub500/) | Bluetooth 5.0 Nano USB Adapter (RTL8761B chipset), permanently installed |
+| [TOZO T10](https://www.tozostore.com/products/t10) | True Wireless Earbuds, Bluetooth 5.3, IPX8 waterproof |
 
 ## Requirements
 
