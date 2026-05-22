@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# tozo-pair.sh — Pair TOZO T10 on Artix OpenRC
+# tozo-pair.sh — Pair TOZO T10 on Artix Linux (runit or OpenRC)
 # Run from X session terminal (VNC or local)
 
 MAC="94:4B:F8:01:52:02"

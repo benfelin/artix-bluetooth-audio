@@ -9,7 +9,7 @@ if [[ $EUID -eq 0 ]]; then
 fi
 
 MAC="94:4B:F8:01:52:02"
-SINK="alsa_output.pci-0000_00_1b.0.analog-stereo"
+SINK=$(pactl list sinks short 2>/dev/null | grep -v bluez | grep analog-stereo | awk '{print $2}' | head -1)
 
 # ── Detect init system ────────────────────────────────────────────────────────
 if command -v sv &>/dev/null && [[ -d /run/runit ]]; then
@@ -47,7 +47,12 @@ fi
 echo "Powering off Bluetooth adapter..."
 bluetoothctl power off
 
-echo "Switching to speakers..."
+if [[ -z "$SINK" ]]; then
+  echo "✘ No analog sink found — is the sound card available?"
+  exit 1
+fi
+
+echo "Switching to speakers ($SINK)..."
 pactl set-default-sink "$SINK"
 
 restart_mpd

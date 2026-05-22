@@ -1,6 +1,6 @@
 # bt-audio
 
-Bluetooth audio management scripts for Artix Linux (runit) with TOZO T10 earbuds and TP-Link UB500 dongle.
+Bluetooth audio management scripts for Artix Linux (runit and OpenRC) with TOZO T10 earbuds and TP-Link UB500 dongle.
 
 ## Hardware
 
@@ -11,7 +11,7 @@ Bluetooth audio management scripts for Artix Linux (runit) with TOZO T10 earbuds
 
 ## Requirements
 
-- Artix Linux with runit
+- Artix Linux with runit or OpenRC (auto-detected)
 - PipeWire + WirePlumber
 - `bluez`, `bluez-utils`
 - `expect` (for fallback pairing)
@@ -50,7 +50,7 @@ To switch:
 
 ## Tested On
 
-- Artix Linux (runit) — kernel 7.0.x
+- Artix Linux (runit and OpenRC) — kernel 7.0.x
 - PipeWire 1.6.x + WirePlumber 0.5.x
 - TP-Link UB500 (RTL8761B chipset)
 - TOZO T10 (SN: 00T1085A series)
