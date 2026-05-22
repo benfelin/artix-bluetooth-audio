@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+# earbuds.sh — Switch audio output to TOZO T10 Bluetooth earbuds
+# Must NOT be run as root — talks to user PipeWire/bluetoothctl session
+if [[ $EUID -eq 0 ]]; then
+  echo "✘ Do not run this script with sudo — run as regular user: $(basename $0)"
+  exit 1
+fi
+
+MAC="94:4B:F8:01:52:02"
+SINK="bluez_output.${MAC//:/_}.1"
+CARD="bluez_card.${MAC//:/_}"
+
+# ── 1. Power on adapter ───────────────────────────────────────────────────────
+echo "Powering on Bluetooth adapter..."
+bluetoothctl power on
+sleep 2
+
+# ── 2. Try direct connect first (fast path) ───────────────────────────────────
+echo "Trying direct connect..."
+for attempt in {1..3}; do
+  RESULT=$(bluetoothctl connect "$MAC" 2>&1)
+  if echo "$RESULT" | grep -q "Connection successful"; then
+    echo "✔ Connected directly!"
+    CONNECTED=true
+    break
+  fi
+  sleep 2
+done
+
+# ── 3. If direct connect failed, scan and re-pair ─────────────────────────────
+if [[ "${CONNECTED:-false}" != "true" ]]; then
+  echo "Direct connect failed — removing old pairing..."
+  bluetoothctl remove "$MAC" 2>/dev/null || true
+  sleep 1
+
+  echo ""
+  echo "👉 Put TOZO T10 in pairing mode:"
+  echo "   - Put earbuds in case, take them out"
+  echo "   - Wait for left earbud to flash red/blue alternately"
+  echo ""
+  echo "Waiting 10 seconds for earbuds to enter pairing mode..."
+  sleep 10
+
+  # Use hcitool to verify device is visible
+  echo "Checking TOZO is visible..."
+  FOUND_MAC=""
+  for attempt in {1..3}; do
+    SCAN_OUTPUT=$(sudo btmgmt find 2>/dev/null)
+    FOUND_MAC=$(echo "$SCAN_OUTPUT" | grep -i "TOZO" | grep -oE '([0-9A-F]{2}:){5}[0-9A-F]{2}')
+    if [[ -n "$FOUND_MAC" ]]; then
+      echo "TOZO visible at $FOUND_MAC"
+      break
+    fi
+    echo "Not visible yet, retrying..."
+    sleep 5
+  done
+
+  if [[ -z "$FOUND_MAC" ]]; then
+    echo "✘ TOZO T10 not found — is it in pairing mode and in range?"
+    exit 1
+  fi
+
+  MAC="$FOUND_MAC"
+  SINK="bluez_output.${MAC//:/_}.1"
+  CARD="bluez_card.${MAC//:/_}"
+
+  # Use expect to drive bluetoothctl interactively
+  echo "Pairing via bluetoothctl (expect)..."
+  RESULT=$(expect << EXPEOF
+set timeout 30
+spawn bluetoothctl
+expect "#"
+send "scan on\r"
+sleep 8
+send "scan off\r"
+expect "#"
+send "pair $MAC\r"
+expect -re "(successful|not available|Failed)"
+send "trust $MAC\r"
+expect "#"
+send "connect $MAC\r"
+expect -re "(successful|not available|Failed)"
+send "exit\r"
+expect eof
+EXPEOF
+)
+  echo "$RESULT"
+
+  if echo "$RESULT" | grep -q "Connection successful"; then
+    echo "✔ Connected!"
+    CONNECTED=true
+  else
+    echo "✘ Failed to connect after pairing."
+    exit 1
+  fi
+fi
+
+# ── 4. Wait for PipeWire sink ─────────────────────────────────────────────────
+echo "Waiting for Bluetooth sink..."
+for i in {1..20}; do
+  if pactl list sinks short 2>/dev/null | grep -q "bluez_output"; then
+    break
+  fi
+  sleep 1
+done
+
+if ! pactl list sinks short 2>/dev/null | grep -q "bluez_output"; then
+  echo "✘ Bluetooth sink not available — try: systemctl --user restart wireplumber"
+  exit 1
+fi
+
+# ── 5. Set A2DP profile and default sink ──────────────────────────────────────
+echo "Setting A2DP profile..."
+pactl set-card-profile "$CARD" a2dp-sink 2>/dev/null || true
+sleep 1
+
+echo "Switching to earbuds..."
+pactl set-default-sink "$SINK"
+
+# ── 6. Kickstart audio stream to wake up PipeWire Bluetooth node ──────────────
+echo "Waking up audio stream..."
+paplay /usr/share/sounds/alsa/Front_Center.wav 2>/dev/null || true
+sleep 1
+
+# ── 7. Restart MPD if running ────────────────────────────────────────────────
+if systemctl --user is-active --quiet mpd; then
+  systemctl --user restart mpd
+fi
+
+echo "✔ Audio → TOZO T10 earbuds"
