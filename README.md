@@ -79,4 +79,4 @@ TOZO T10 ←──── Bluetooth ────→ TP-Link UB500
 
 ## License
 
-MIT
+[MIT](LICENSE)
