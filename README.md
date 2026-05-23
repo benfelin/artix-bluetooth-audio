@@ -23,30 +23,34 @@ Bluetooth audio management scripts for Artix Linux (runit) with TOZO T10 earbuds
 sudo bash setup.sh
 
 # 2. Install daily-use scripts
-sudo cp bin/earbuds /usr/local/bin/
-sudo cp bin/speaker /usr/local/bin/
-sudo cp bin/bluetooth-sanity-check /usr/local/bin/
+sudo cp bin/earbuds bin/speaker bin/bluetooth-sanity-check /usr/local/bin/
 sudo chmod 755 /usr/local/bin/{earbuds,speaker,bluetooth-sanity-check}
 ```
 
 ## Usage
 
 ```bash
-earbuds               # Connect TOZO T10, switch audio to earbuds
-speaker               # Disconnect TOZO T10, switch audio to speakers
-bluetooth-sanity-check  # Verify everything is healthy
-bash utils/recovery-pair.sh # First-time or recovery pairing
+earbuds                      # Connect TOZO T10, switch audio to earbuds
+speaker                      # Disconnect TOZO T10, switch audio to speakers
+bluetooth-sanity-check       # Verify everything is healthy
+bash utils/recovery-pair.sh  # First-time or recovery pairing
 ```
 
-## Switching Between Computers
+## Setup
 
-The UB500 dongle is **permanently installed** in one machine. The TOZO T10 is paired to both the Linux machine (via UB500) and a MacBook Pro (via built-in Bluetooth).
+Each machine has its own dedicated Bluetooth adapter:
 
-To switch:
-1. Run `speaker` on the current machine
+| Machine | Adapter |
+|---|---|
+| Artix Linux (mofo) | TP-Link UB500 — permanently installed |
+| MacBook Pro | Built-in Bluetooth |
+
+The TOZO T10 is paired to both. To switch:
+
+1. Run `speaker` on the Linux machine (or disconnect from macOS Bluetooth menu)
 2. Put earbuds in case
 3. Take earbuds out near the other machine
-4. Run `earbuds` (Linux) or select from Bluetooth menu (macOS)
+4. Run `earbuds` (Linux) or wait for auto-connect (macOS)
 
 ## Tested On
 
@@ -58,7 +62,7 @@ To switch:
 ## Known Issues
 
 - After a kernel update, always reboot before using Bluetooth (`uname -r` should match `ls /lib/modules/`)
-- macOS aggressively auto-connects to the TOZO — disable Mac Bluetooth before switching to Linux if needed
+- macOS may auto-connect to the TOZO — disconnect from macOS Bluetooth menu before switching to Linux
 - First-time pairing requires `recovery-pair.sh` due to TOZO's short pairing window
 
 ## Architecture
