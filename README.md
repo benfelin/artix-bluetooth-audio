@@ -36,22 +36,6 @@ bluetooth-sanity-check       # Verify everything is healthy
 bash utils/recovery-pair.sh  # First-time or recovery pairing
 ```
 
-## Setup
-
-Each machine has its own dedicated Bluetooth adapter:
-
-| Machine | Adapter |
-|---|---|
-| Artix Linux (mofo) | TP-Link UB500 — permanently installed |
-| MacBook Pro | Built-in Bluetooth |
-
-The TOZO T10 is paired to both. To switch:
-
-1. Run `speaker` on the Linux machine (or disconnect from macOS Bluetooth menu)
-2. Put earbuds in case
-3. Take earbuds out near the other machine
-4. Run `earbuds` (Linux) or wait for auto-connect (macOS)
-
 ## Tested On
 
 - Artix Linux (runit) — kernel 7.0.x
@@ -92,7 +76,6 @@ TOZO T10 ←──── Bluetooth ────→ TP-Link UB500
 ## Credits
 
 - Scripts developed with [Claude](https://claude.ai) (Anthropic) over an extensive troubleshooting session covering Bluetooth stack debugging, PipeWire/WirePlumber configuration, kernel module issues, and multi-OS audio switching.
-- Hardware tested on HP EliteDesk 800 G1 running Artix Linux.
 
 ## License
 
