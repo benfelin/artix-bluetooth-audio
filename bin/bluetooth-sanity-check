@@ -76,7 +76,7 @@ else
   fail "pipewire is NOT running"
 fi
 
-if pgrep -a pipewire 2>/dev/null | grep -q "pipewire-pulse.conf"; then
+if pgrep -x pipewire-pulse > /dev/null || pgrep -a pipewire 2>/dev/null | grep -q "pipewire-pulse.conf"; then
   pass "pipewire-pulse is running"
 else
   fail "pipewire-pulse is NOT running"
@@ -96,17 +96,22 @@ fi
 
 # ── 5. Disk Space ─────────────────────────────────────────────────────────────
 header "5. Disk Space"
-DISK_USE=$(df / | awk 'NR==2 {print $5}' | tr -d '%')
-DISK_AVAIL=$(df -h / | awk 'NR==2 {print $4}')
-if [[ "$DISK_USE" -lt 90 ]]; then
-  pass "Disk usage is ${DISK_USE}% (${DISK_AVAIL} free)"
-elif [[ "$DISK_USE" -lt 97 ]]; then
-  warn "Disk usage is ${DISK_USE}% (${DISK_AVAIL} free) — getting low"
-  info "Clean up: sudo pacman -Sc"
-else
-  fail "Disk is ${DISK_USE}% full — WirePlumber will fail to save state!"
-  info "Clean up: sudo pacman -Sc"
-fi
+# Check both / and /home (may be separate partitions)
+for MOUNT in / /home; do
+  if mountpoint -q "$MOUNT" 2>/dev/null || [[ "$MOUNT" == "/" ]]; then
+    DISK_USE=$(df "$MOUNT" | awk 'NR==2 {print $5}' | tr -d '%')
+    DISK_AVAIL=$(df -h "$MOUNT" | awk 'NR==2 {print $4}')
+    if [[ "$DISK_USE" -lt 90 ]]; then
+      pass "Disk $MOUNT usage is ${DISK_USE}% (${DISK_AVAIL} free)"
+    elif [[ "$DISK_USE" -lt 97 ]]; then
+      warn "Disk $MOUNT usage is ${DISK_USE}% (${DISK_AVAIL} free) — getting low"
+      info "Clean up: sudo pacman -Sc"
+    else
+      fail "Disk $MOUNT is ${DISK_USE}% full — WirePlumber will fail to save state!"
+      info "Clean up: sudo pacman -Sc"
+    fi
+  fi
+done
 
 # ── 6. Bluetooth Audio Devices ───────────────────────────────────────────────
 header "6. Bluetooth Audio Devices"
