@@ -1,4 +1,4 @@
-# bt-audio
+# artix-bluetooth-audio
 
 Bluetooth audio management scripts for Artix Linux (runit) with TOZO T10 earbuds and TP-Link UB500 dongle.
 
