@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # speaker — Switch audio output to analogue speakers
-# Supports Artix Linux with runit or OpenRC
+# Artix Linux — runit
 # Must NOT be run as root
 
 if [[ $EUID -eq 0 ]]; then
@@ -11,22 +11,9 @@ fi
 MAC="94:4B:F8:01:52:02"
 SINK=$(pactl list sinks short 2>/dev/null | grep -v bluez | grep analog-stereo | awk '{print $2}' | head -1)
 
-# ── Detect init system ────────────────────────────────────────────────────────
-if command -v sv &>/dev/null && [[ -d /run/runit ]]; then
-  INIT="runit"
-elif command -v rc-service &>/dev/null; then
-  INIT="openrc"
-else
-  INIT="unknown"
-fi
-
 restart_user_service() {
   local svc=$1
-  case "$INIT" in
-    runit)   sv restart ~/.config/sv/"$svc" 2>/dev/null || true ;;
-    openrc)  rc-service --user "$svc" restart 2>/dev/null || true ;;
-    *)       echo "⚠ Unknown init system — restart $svc manually" ;;
-  esac
+  sv restart ~/.config/sv/"$svc" 2>/dev/null || true
 }
 
 restart_mpd() {
@@ -57,4 +44,4 @@ pactl set-default-sink "$SINK"
 
 restart_mpd
 
-echo "✔ Audio → Speakers (init: $INIT)"
+echo "✔ Audio → Speakers"

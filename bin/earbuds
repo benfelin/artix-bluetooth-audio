@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # earbuds — Switch audio output to TOZO T10 Bluetooth earbuds
-# Supports Artix Linux with runit or OpenRC
+# Artix Linux — runit
 # Must NOT be run as root
 
 if [[ $EUID -eq 0 ]]; then
@@ -12,22 +12,9 @@ MAC="94:4B:F8:01:52:02"
 SINK="bluez_output.${MAC//:/_}.1"
 CARD="bluez_card.${MAC//:/_}"
 
-# ── Detect init system ────────────────────────────────────────────────────────
-if command -v sv &>/dev/null && [[ -d /run/runit ]]; then
-  INIT="runit"
-elif command -v rc-service &>/dev/null; then
-  INIT="openrc"
-else
-  INIT="unknown"
-fi
-
 restart_user_service() {
   local svc=$1
-  case "$INIT" in
-    runit)   sv restart ~/.config/sv/"$svc" 2>/dev/null || true ;;
-    openrc)  rc-service --user "$svc" restart 2>/dev/null || true ;;
-    *)       echo "⚠ Unknown init system — restart $svc manually" ;;
-  esac
+  sv restart ~/.config/sv/"$svc" 2>/dev/null || true
 }
 
 restart_mpd() {
@@ -150,4 +137,4 @@ sleep 1
 # ── 7. Restart MPD if running ────────────────────────────────────────────────
 restart_mpd
 
-echo "✔ Audio → TOZO T10 earbuds (init: $INIT)"
+echo "✔ Audio → TOZO T10 earbuds"
