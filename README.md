@@ -35,7 +35,7 @@ sudo chmod 755 /usr/local/bin/{earbuds,speaker,bluetooth-sanity-check}
 earbuds               # Connect TOZO T10, switch audio to earbuds
 speaker               # Disconnect TOZO T10, switch audio to speakers
 bluetooth-sanity-check  # Verify everything is healthy
-bash utils/tozo-pair.sh # First-time or recovery pairing
+bash utils/recovery-pair.sh # First-time or recovery pairing
 ```
 
 ## Switching Between Computers
@@ -59,7 +59,7 @@ To switch:
 
 - After a kernel update, always reboot before using Bluetooth (`uname -r` should match `ls /lib/modules/`)
 - macOS aggressively auto-connects to the TOZO — disable Mac Bluetooth before switching to Linux if needed
-- First-time pairing requires `tozo-pair.sh` due to TOZO's short pairing window
+- First-time pairing requires `recovery-pair.sh` due to TOZO's short pairing window
 
 ## Architecture
 
@@ -83,7 +83,7 @@ TOZO T10 ←──── Bluetooth ────→ TP-Link UB500
 | `bin/earbuds` | Switch audio to TOZO T10 |
 | `bin/speaker` | Switch audio to speakers |
 | `bin/bluetooth-sanity-check` | Health check |
-| `utils/tozo-pair.sh` | First-time/recovery pairing |
+| `utils/recovery-pair.sh` | First-time/recovery pairing |
 
 ## Credits
 
