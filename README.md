@@ -49,6 +49,43 @@ bash utils/recovery-pair.sh  # First-time or recovery pairing
 - macOS may auto-connect to the TOZO — disconnect from macOS Bluetooth menu before switching to Linux
 - First-time pairing requires `recovery-pair.sh` due to TOZO's short pairing window
 
+## Troubleshooting
+
+### earbuds fails to find TOZO T10
+
+If `earbuds` reports "TOZO T10 not found", pair manually:
+
+1. Put TOZO in pairing mode (take out of case, wait for earbud to flash red/blue)
+2. Run:
+```bash
+bluetoothctl
+scan on
+```
+3. Wait for `TOZO T10` to appear, then immediately:
+```
+pair 94:4B:F8:01:52:02
+trust 94:4B:F8:01:52:02
+connect 94:4B:F8:01:52:02
+exit
+```
+4. Then run `earbuds` to set A2DP and switch audio.
+
+### No sound after connecting
+
+Run `earbuds` — it sets A2DP profile and restarts MPD automatically.
+
+### Trusted devices lost after reboot
+
+This happens when disk is full and BlueZ can't write state. Check disk space first, then:
+```bash
+bluetoothctl trust 94:4B:F8:01:52:02
+earbuds
+```
+
+### macOS stealing the TOZO
+
+Disable Bluetooth on macOS before switching to Linux, or get a dedicated UB500 dongle per machine.
+
 ## Architecture
 
 ```
